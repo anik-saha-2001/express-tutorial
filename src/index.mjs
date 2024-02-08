@@ -13,6 +13,19 @@ const loggingMiddleware = (request, response, next) => {
 //Using Middleware globally
 app.use(loggingMiddleware);
 
+const resolveIndexByUserId = (request, response, next) => {
+  const {
+    body,
+    params: { id },
+  } = request;
+  const parsedID = parseInt(id);
+  if (isNaN(parsedID)) return response.sendStatus(400);
+  const findUserIndex = data.findIndex((user) => user.id === parsedID);
+  if (findUserIndex === -1) return response.sendStatus(404);
+  request.findUserIndex = findUserIndex;
+  next();
+};
+
 const PORT = process.env.PORT || 3000;
 
 app.get(
@@ -74,73 +87,34 @@ app.get("/api/products", (request, response) => {
 });
 
 //Route Parameters
-app.get("/api/users/:id", (request, response) => {
-  console.log(request.params);
-  const parsedID = parseInt(request.params.id);
-
-  if (isNaN(parsedID))
-    return response.status(400).send({ msg: "Bad Request. Invalid ID." });
-
-  const findUser = data.find((user) => user.id === parsedID);
+app.get("/api/users/:id", resolveIndexByUserId, (request, response) => {
+  const { findUserIndex } = request;
+  const findUser = data[findUserIndex];
   if (!findUser) return response.sendStatus(404);
   return response.send(findUser);
 });
 
 //Put Requests (used to update entire record)
 
-app.put("/api/users/:id", (request, response) => {
-  const {
-    body,
-    params: { id },
-  } = request;
-
-  const parsedID = parseInt(id);
-
-  if (isNaN(parsedID)) return response.sendStatus(400);
-
-  const findUserIndex = data.findIndex((user) => user.id === parsedID);
-
-  if (findUserIndex === -1) return response.sendStatus(404);
-
-  data[findUserIndex] = { id: parsedID, ...body };
+app.put("/api/users/:id", resolveIndexByUserId, (request, response) => {
+  //All of the logic is defined in resolveIndexByUserId
+  const { body, findUserIndex } = request; // never modify request body
+  data[findUserIndex] = { id: data[findUserIndex].id, ...body };
   return response.sendStatus(200);
 });
 
 //Patch Requests (used to update some part of record)
 
-app.patch("/api/users/:id", (request, response) => {
-  const {
-    body,
-    params: { id },
-  } = request;
-
-  const parsedID = parseInt(id);
-
-  if (isNaN(parsedID)) return response.sendStatus(400);
-
-  const findUserIndex = data.findIndex((user) => user.id === parsedID);
-
-  if (findUserIndex === -1) return response.sendStatus(404);
-
+app.patch("/api/users/:id", resolveIndexByUserId, (request, response) => {
+  const { body, findUserIndex } = request;
   data[findUserIndex] = { ...data[findUserIndex], ...body };
   return response.sendStatus(200);
 });
 
 //Delete Requests
 
-app.delete("/api/users/:id", (request, response) => {
-  const {
-    params: { id },
-  } = request;
-
-  const parsedID = parseInt(id);
-
-  if (isNaN(parsedID)) request.sendStatus(400);
-
-  const findUserIndex = data.findIndex((user) => user.id === parsedID);
-
-  if (findUserIndex === -1) return response.sendStatus(404);
-
+app.delete("/api/users/:id", resolveIndexByUserId, (request, response) => {
+  const { findUserIndex } = request;
   data.splice(findUserIndex, 1);
   return response.sendStatus(200);
 });
