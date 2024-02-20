@@ -1,4 +1,15 @@
 import express from "express";
+import {
+  query,
+  validationResult,
+  body,
+  matchedData,
+  checkSchema,
+} from "express-validator";
+import {
+  createQuerySchema,
+  createUserValidationSchema,
+} from "./utils/validationSchemas.mjs";
 
 const app = express();
 
@@ -53,8 +64,9 @@ const data = [
 ];
 
 //api/users
-app.get("/api/users", (request, response) => {
-  console.log(request.query);
+app.get("/api/users", checkSchema(createQuerySchema), (request, response) => {
+  const result = validationResult(request);
+  console.log(result);
   //Query Parameters usage
   const {
     query: { filter, value },
@@ -70,13 +82,23 @@ app.get("/api/users", (request, response) => {
 
 //The data that we send to backend server via payload or request body, then it takes and does its work!
 
-app.post("/api/users", (request, response) => {
-  console.log(request.body);
-  const { body } = request;
-  const newUser = { id: data[data.length - 1].id + 1, ...body };
-  data.push(newUser);
-  return response.status(200).send(data);
-});
+app.post(
+  "/api/users",
+  checkSchema(createUserValidationSchema),
+  (request, response) => {
+    const result = validationResult(request);
+    console.log(result);
+
+    if (!result.isEmpty())
+      return response.status(400).send({ errors: result.array() });
+
+    const matchData = matchedData(request);
+
+    const newUser = { id: data[data.length - 1].id + 1, ...matchData };
+    data.push(newUser);
+    return response.status(200).send(data);
+  }
+);
 
 //api/products
 app.get("/api/products", (request, response) => {
@@ -120,6 +142,7 @@ app.delete("/api/users/:id", resolveIndexByUserId, (request, response) => {
 });
 
 //      Server     ==================>
+
 app.listen(PORT, () => {
   console.log(`Running on Port: ${PORT}`);
 });
