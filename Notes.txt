@@ -1,3 +1,5 @@
 #> Declared a "type": "module" so file name changed from index.js(as it was in "common.js" and we use "require") to index.mjs
 
-#> Middlware is just a function that can have logic and also a request handler as well. It has the (request, response, next) arguments as well. The next is also a function called when done with the Middleware.
+#> Middleware is just a function that can have logic and also a request handler as well. It has the (request, response, next) arguments as well. The next is also a function called when done with the Middleware.
+
+#> Cookies or HTTP Cookies are a small piece of data that the web server sends to the browser.
