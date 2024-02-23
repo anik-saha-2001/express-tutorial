@@ -2,6 +2,7 @@ import express from "express";
 import routes from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import { data } from "./utils/constants.mjs";
 
 const app = express();
 
@@ -35,4 +36,51 @@ app.get("/", (req, res) => {
   //cookie for 10secs
   res.cookie("hello", "world", { maxAge: 10000, signed: true });
   res.status(201).send({ msg: "Hello There!" });
+});
+
+app.post("/api/auth", (request, response) => {
+  const {
+    body: { username, password },
+  } = request;
+
+  const findUser = data.find((user) => user.username === username);
+
+  if (!findUser || findUser.password !== password)
+    return response.status(401).send({ msg: "Invalid Credentials" });
+
+  request.session.user = findUser;
+
+  return response.status(200).send(findUser);
+});
+
+app.get("/api/auth/status", (request, response) => {
+  request.sessionStore.get(request.sessionID, (err, session) => {
+    if (err) console.log(err);
+    console.log(session);
+  });
+
+  return request.session.user
+    ? response.status(200).send(request.session.user)
+    : response.status(401).send({ msg: "Not Authenticated" });
+});
+
+app.post("/api/cart", (request, response) => {
+  if (!request.session.user) return response.sendStatus(401);
+  const { body: item } = request;
+
+  const { cart } = request.session;
+
+  if (cart) {
+    cart.push(item);
+  } else {
+    request.session.cart = [item];
+  }
+
+  return response.status(201).send(item);
+});
+
+app.get("/api/cart", (request, response) => {
+  if (!request.session.user) return response.sendStatus(401);
+
+  return response.send(request.session.cart ?? []);
 });
