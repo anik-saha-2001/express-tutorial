@@ -20,8 +20,21 @@ router.get(
     .isLength({ min: 3, max: 10 })
     .withMessage("Must have 3-10 chars"),
   (request, response) => {
+    console.log(request.sessionID);
+
+    request.sessionStore.get(request.sessionID, (err, sessionData) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+
+      console.log("Session Data: ", sessionData);
+    });
+
     const result = validationResult(request);
+
     console.log(result);
+
     //Query Parameters usage
     const {
       query: { filter, value },
@@ -34,14 +47,12 @@ router.get(
   }
 );
 
-router.get(
-  "/api/users/:id", resolveIndexByUserId, (request, response) => {
-    const { findUserIndex } = request;
-    const findUser = data[findUserIndex];
-    if (!findUser) return response.sendStatus(404);
-    return response.send(findUser);
-  }
-)
+router.get("/api/users/:id", resolveIndexByUserId, (request, response) => {
+  const { findUserIndex } = request;
+  const findUser = data[findUserIndex];
+  if (!findUser) return response.sendStatus(404);
+  return response.send(findUser);
+});
 
 router.post(
   "/api/users",
@@ -79,6 +90,5 @@ router.delete("/api/users/:id", resolveIndexByUserId, (request, response) => {
   data.splice(findUserIndex, 1);
   return response.sendStatus(200);
 });
-
 
 export default router;

@@ -3,3 +3,12 @@
 #> Middleware is just a function that can have logic and also a request handler as well. It has the (request, response, next) arguments as well. The next is also a function called when done with the Middleware.
 
 #> Cookies or HTTP Cookies are a small piece of data that the web server sends to the browser.
+
+#> Sessions represents the duration of a user on a website. By default HTTPS is stateless we don't know who is making requests to the server. Usage of sessions is to manage user authentication.
+
+http request -> web browser -> server
+                               (response =>
+               cookie saved <- {"Set-cookie": "session_id=abc123"})
+                in browser  
+
+This allows the browser to send the cookie to server and the server parse the cookie from text to json and knows which user sends the request.   
