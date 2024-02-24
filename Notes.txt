@@ -11,4 +11,25 @@ http request -> web browser -> server
                cookie saved <- {"Set-cookie": "session_id=abc123"})
                 in browser  
 
-This allows the browser to send the cookie to server and the server parse the cookie from text to json and knows which user sends the request.   
+This allows the browser to send the cookie to server and the server parse the cookie from text to json and knows which user sends the request. 
+
+################################
+Passport.js serialization deserialization =>
+
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+});              │
+                 │ 
+                 │
+                 └─────────────────┬──→ saved to session
+                                   │    req.session.passport.user = {id: '..'}
+                                   │
+                                   ↓           
+passport.deserializeUser(function(id, done) {
+                   ┌───────────────┘
+                   │
+                   ↓ 
+    User.findById(id, function(err, user) {
+        done(err, user);
+    });            └──────────────→ user object attaches to the request as req.user   
+});
