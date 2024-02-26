@@ -34,7 +34,18 @@ app.post("/api/auth", passport.authenticate("local"), (request, response) => {
 app.get("/api/auth/status", (request, response) => {
   console.log(`Inside /api/auth/status`);
   console.log(request.user);
-  return request.user ? response.status(200).send(request.user) : response.sendStatus(401);
+  return request.user
+    ? response.status(200).send(request.user)
+    : response.sendStatus(401);
+});
+
+app.post("/api/auth/logout", (request, response) => {
+  if (!request.user) return response.sendStatus(401);
+
+  request.logOut((err) => {
+    if (err) return response.sendStatus(400);
+    response.sendStatus(200);
+  });
 });
 
 const PORT = process.env.PORT || 3000;
