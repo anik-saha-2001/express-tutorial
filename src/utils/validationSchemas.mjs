@@ -21,6 +21,9 @@ export const createUserValidationSchema = {
       errorMessage: "Display name can't be empty",
     },
   },
+  password: {
+    notEmpty: true,
+  },
 };
 
 export const createQuerySchema = {

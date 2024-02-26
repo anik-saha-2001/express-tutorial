@@ -8,6 +8,7 @@ import {
 } from "express-validator";
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../utils/middlewares.mjs";
+import { User } from "../mongoose/schemas/user.mjs";
 
 const router = Router();
 
@@ -57,18 +58,21 @@ router.get("/api/users/:id", resolveIndexByUserId, (request, response) => {
 router.post(
   "/api/users",
   checkSchema(createUserValidationSchema),
-  (request, response) => {
+  async (request, response) => {
     const result = validationResult(request);
-    console.log(result);
 
-    if (!result.isEmpty())
-      return response.status(400).send({ errors: result.array() });
-
-    const matchData = matchedData(request);
-
-    const newUser = { id: data[data.length - 1].id + 1, ...matchData };
-    data.push(newUser);
-    return response.status(200).send(data);
+    if (!result.isEmpty()) return response.status(400).send(result.array());
+    
+    const data = matchedData(request);
+    console.log(data);
+    const newUser = new User(data);
+    try {
+      const savedUser = await newUser.save();
+      return response.status(201).send(savedUser);
+    } catch (error) {
+      console.log(error);
+      return response.status(400).send({ msg: error.message });
+    }
   }
 );
 
