@@ -6,6 +6,7 @@ import { data } from "./utils/constants.mjs";
 import passport from "passport";
 import "./strategies/local-strategy.mjs";
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 
 const app = express();
 
@@ -19,11 +20,14 @@ app.use(cookieParser("helloworld"));
 app.use(
   session({
     secret: "iamaniksaha.dev",
-    saveUninitialized: false,
+    saveUninitialized: true,
     resave: false,
     cookie: {
       maxAge: 60000 * 60,
     },
+    store: MongoStore.create({
+      client: mongoose.connection.getClient(),
+    }),
   })
 );
 
