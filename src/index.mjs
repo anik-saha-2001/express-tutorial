@@ -1,10 +1,11 @@
-import express from "express";
+import express, { response } from "express";
 import routes from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { data } from "./utils/constants.mjs";
 import passport from "passport";
-import "./strategies/local-strategy.mjs";
+// import "./strategies/local-strategy.mjs";
+import "./strategies/discord-strategy.mjs";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
 
@@ -57,6 +58,18 @@ app.post("/api/auth/logout", (request, response) => {
     response.sendStatus(200);
   });
 });
+
+// TODO: OAuth 2.0 discord using passport.js
+app.get("/api/auth/discord", passport.authenticate("discord"));
+app.get(
+  "/api/auth/discord/redirect",
+  passport.authenticate("discord"),
+  (request, response) => {
+    console.log(request.session);
+    console.log(request.user);
+    response.sendStatus(200);
+  }
+);
 
 const PORT = process.env.PORT || 3000;
 
@@ -120,3 +133,7 @@ app.get("/api/cart", (request, response) => {
 
   return response.send(request.session.cart ?? []);
 });
+
+// client_secret = Xc52bD_ri2NgEyjv-H0D1OXa2hUf23KI
+// client_id = 1211936830774190100
+// http://localhost:3000/api/auth/discord/redirect
